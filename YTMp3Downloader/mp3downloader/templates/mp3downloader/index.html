@@ -10,6 +10,18 @@
     <title>YTMp3Downloader</title>
 </head>
 <body>
-    Hi
+    <div class="d-flex justify-content-center m-2">      
+        <div class="container">
+            <h2 class="mt-4 text-center">Youtube Mp3 Downloader</h2>
+            
+            <form action="{% url 'index' %}" method="POST">
+                <div class="form-group d-flex mt-4"> 
+                    {% csrf_token %}
+                    <input class="form-control mr-2" type="text" name="video_url" id="video_url" autofocus placeholder="Youtube video URL">
+                    <input class="btn btn-primary" type="submit" value="Download">
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
