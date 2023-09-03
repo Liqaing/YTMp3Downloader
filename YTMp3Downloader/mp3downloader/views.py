@@ -24,17 +24,17 @@ def index(request):
 
         # Use subprocess to call another yt-dlp program to download mp3
         # note change music to %(title)
-        command = ['yt-dlp', '-f', 'ba', '-x', '--audio-format', 'mp3', yt_url, '-o', 'music.%(ext)s']
+        command = ['yt-dlp', '-f', 'ba', '-x', '--audio-format', 'mp3', yt_url, '-o', 'downloadmusic/music.%(ext)s']
         subprocess.call(command)
         
         # Get file which download on server and return it to user
-        music_file = open('music.mp3', 'rb')
+        music_file = open('downloadmusic/music.mp3', 'rb')
         response = HttpResponse(music_file.read(), content_type='audio/mpeg')
         response['Content-Disposition'] = 'attachment; filename="music.mp3"'
         
         # Clean up download file
         music_file.close()
-        subprocess.call(['rm', 'music.mp3'])
+        subprocess.call(['rm', 'downloadmusic/music.mp3'])
     
         return response
         
