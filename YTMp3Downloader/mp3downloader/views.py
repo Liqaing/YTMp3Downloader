@@ -1,9 +1,11 @@
 from pathlib import Path
 import yt_dlp
+import subprocess
 
 from . import util
 
 from django.shortcuts import render
+from django.http import HttpResponse
 
 # Create your views here.
 def index(request):
@@ -20,23 +22,39 @@ def index(request):
         if not yt_video_id:
             return render(request, "mp3downloader/index.html")
 
-        # Download video as mp3
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            # 'outtmpl': r'C:\Users\Rick\Downloads',
-        }
+        # Use subprocess to call another yt-dlp program to download mp3
+        # note change music to %(title)
+        command = ['yt-dlp', '-f', 'ba', '-x', '--audio-format', 'mp3', yt_url, '-o', 'music.%(ext)s']
+        print(subprocess.call(command))
         
-        ydl = yt_dlp.YoutubeDL(ydl_opts)
-        info_dict = ydl.extract_info(yt_video_id, download=True)
+        # Get file which download on server and return it to user
+        music_file = open('music.mp3', 'rb')
+        response = HttpResponse(music_file.read(), content_type='audio/mpeg')
+        response['Content-Disposition'] = 'attachment; filename="music.mp3"'
+        
+        # Clean up download file
+        music_file.close()
+        subprocess.call(['rm', 'music.mp3'])
+    
+        return response
+        
+        
+        # # success
+        # command = ['yt-dlp', yt_url, '--extract-audio', '--audio-format', 'mp3', '-o', 'downloaded_audio.%(ext)s']
+        # subprocess.call(command)
 
-        print(info_dict)
+        # # Serve the downloaded MP3 file as a response
+        # audio_file = open('downloaded_audio.mp3', 'rb')
+        # response = HttpResponse(audio_file.read(), content_type='audio/mpeg')
+        # response['Content-Disposition'] = 'attachment; filename="downloaded_audio.mp3"'
 
-        return render(request, "mp3downloader/index.html")
+        # # Clean up the downloaded files
+        # audio_file.close()
+        # subprocess.call(['rm', 'downloaded_audio.mp3'])
+
+        # return response
+
+        
 
     return render(request, "mp3downloader/index.html")
 
