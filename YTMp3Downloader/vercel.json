@@ -1,0 +1,14 @@
+{
+    "builds": [
+      {
+        "src": "YTMp3Downloader/wsgi.py",
+        "use": "@vercel/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "YTMp3Downloader/wsgi.py"
+      }
+    ]
+}
