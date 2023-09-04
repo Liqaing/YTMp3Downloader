@@ -6,7 +6,7 @@ from . import util
 
 from django.shortcuts import render
 from django.http import HttpResponse, FileResponse
-
+import urllib.request
 
 # Create your views here.
 def index(request):
@@ -17,15 +17,42 @@ def index(request):
         yt_url = request.POST["video_url"]
         if not yt_url:
             return render(request, "mp3downloader/index.html")
-        
+
+        # Test 
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'extractaudio': True,
+            'audioformat': 'mp3',
+        }
+        ydl = yt_dlp.YoutubeDL(ydl_opts)
+
+        # Download the audio and stream it to the client
+        with ydl:
+            info_dict = ydl.extract_info(yt_url, download=False)
+            audio_url = info_dict.get("url")
+
+            # Set response headers for streaming
+            response = HttpResponse(content_type="audio/mpeg")
+            response['Content-Disposition'] = 'attachment; filename="audio.mp3"'
+
+            # Stream the audio from the audio URL to the response
+            with urllib.request.urlopen(audio_url) as audio_stream:
+                for chunk in audio_stream:
+                    response.write(chunk)
+
+            return response
+
+       
         # Test code
-        process = subprocess.Popen(['yt-dlp', '--output', '-', '--extract-audio', '--audio-format', 'mp3', yt_url], stdout=subprocess.PIPE)
+        # process = subprocess.Popen(['yt-dlp', '--output', '-', '--extract-audio', '--audio-format', 'mp3', yt_url], stdout=subprocess.PIPE)
+        # print("HI")
+        # print(process.stdout)
 
-        # Set response headers for streaming
-        response = FileResponse(process.stdout, content_type='audio/mpeg')
-        response['Content-Disposition'] = 'attachment; filename="music.mp3"'
+        # # Set response headers for streaming
+        # response = FileResponse(process.stdout, content_type='audio/mpeg')
+        # response['Content-Disposition'] = 'attachment; filename="music.mp3"'
 
-        return response
+        # return response
 
         # My code
         # # Retrive video id
@@ -48,24 +75,6 @@ def index(request):
         # subprocess.call(['rm', 'downloadmusic/music.mp3'])
     
         # return response
-        
-        
-        # # success
-        # command = ['yt-dlp', yt_url, '--extract-audio', '--audio-format', 'mp3', '-o', 'downloaded_audio.%(ext)s']
-        # subprocess.call(command)
-
-        # # Serve the downloaded MP3 file as a response
-        # audio_file = open('downloaded_audio.mp3', 'rb')
-        # response = HttpResponse(audio_file.read(), content_type='audio/mpeg')
-        # response['Content-Disposition'] = 'attachment; filename="downloaded_audio.mp3"'
-
-        # # Clean up the downloaded files
-        # audio_file.close()
-        # subprocess.call(['rm', 'downloaded_audio.mp3'])
-
-        # return response
-
-        
 
     return render(request, "mp3downloader/index.html")
 
