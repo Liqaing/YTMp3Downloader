@@ -5,7 +5,8 @@ import subprocess
 from . import util
 
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
+
 
 # Create your views here.
 def index(request):
@@ -17,26 +18,36 @@ def index(request):
         if not yt_url:
             return render(request, "mp3downloader/index.html")
         
-        # Retrive video id
-        yt_video_id = util.get_yt_video_id(yt_url)
-        if not yt_video_id:
-            return render(request, "mp3downloader/index.html")
+        # Test code
+        process = subprocess.Popen(['yt-dlp', '--output', '-', '--extract-audio', '--audio-format', 'mp3', yt_url], stdout=subprocess.PIPE)
 
-        # Use subprocess to call another yt-dlp program to download mp3
-        # note change music to %(title)
-        command = ['yt-dlp', '-f', 'ba', '-x', '--audio-format', 'mp3', yt_url, '-o', 'downloadmusic/music.%(ext)s']
-        subprocess.call(command)
-        
-        # Get file which download on server and return it to user
-        music_file = open('downloadmusic/music.mp3', 'rb')
-        response = HttpResponse(music_file.read(), content_type='audio/mpeg')
+        # Set response headers for streaming
+        response = FileResponse(process.stdout, content_type='audio/mpeg')
         response['Content-Disposition'] = 'attachment; filename="music.mp3"'
-        
-        # Clean up download file
-        music_file.close()
-        subprocess.call(['rm', 'downloadmusic/music.mp3'])
-    
+
         return response
+
+        # My code
+        # # Retrive video id
+        # yt_video_id = util.get_yt_video_id(yt_url)
+        # if not yt_video_id:
+        #     return render(request, "mp3downloader/index.html")
+
+        # # Use subprocess to call another yt-dlp program to download mp3
+        # # note change music to %(title)
+        # command = ['yt-dlp', '-f', 'ba', '-x', '--audio-format', 'mp3', yt_url, '-o', 'downloadmusic/music.%(ext)s']
+        # subprocess.call(command)
+        
+        # # Get file which download on server and return it to user
+        # music_file = open('downloadmusic/music.mp3', 'rb')
+        # response = HttpResponse(music_file.read(), content_type='audio/mpeg')
+        # response['Content-Disposition'] = 'attachment; filename="music.mp3"'
+        
+        # # Clean up download file
+        # music_file.close()
+        # subprocess.call(['rm', 'downloadmusic/music.mp3'])
+    
+        # return response
         
         
         # # success
