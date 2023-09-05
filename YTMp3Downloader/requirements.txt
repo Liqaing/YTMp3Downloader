@@ -4,8 +4,10 @@ Brotli==1.0.9
 certifi==2023.7.22
 charset-normalizer==3.2.0
 Django==4.2.3
+gunicorn==21.2.0
 idna==3.4
 mutagen==1.46.0
+packaging==23.1
 pycryptodomex==3.18.0
 requests==2.31.0
 sqlparse==0.4.4
