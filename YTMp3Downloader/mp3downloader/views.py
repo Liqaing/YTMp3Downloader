@@ -46,7 +46,7 @@ def index(request):
         # Create a function to generate audio stream chunks
         def audio_stream_generator():
             with requests.get(audio_stream_url, stream=True) as response:
-                for chunk in response.iter_content(chunk_size=1024):
+                for chunk in response.iter_content(chunk_size=4096):  # Adjust chunk_size
                     if chunk:
                         yield chunk
 
