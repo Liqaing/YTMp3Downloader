@@ -1,11 +1,12 @@
 from pathlib import Path
 import yt_dlp
 import subprocess
+import requests
 
 from . import util
 
 from django.shortcuts import render
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, StreamingHttpResponse
 import urllib.request
 
 # Create your views here.
@@ -18,29 +19,64 @@ def index(request):
         if not yt_url:
             return render(request, "mp3downloader/index.html")
 
-        # Test 
+        # Download stream audio and send to user
+
         ydl_opts = {
             'format': 'bestaudio/best',
+            'quiet': True,
             'extractaudio': True,
             'audioformat': 'mp3',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
         }
-        ydl = yt_dlp.YoutubeDL(ydl_opts)
 
-        # Download the audio and stream it to the client
-        with ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(yt_url, download=False)
-            audio_url = info_dict.get("url")
+            if 'entries' in info_dict:
+                video_info = info_dict['entries'][0]
+            else:
+                video_info = info_dict
 
-            # Set response headers for streaming
-            response = HttpResponse(content_type="audio/mpeg")
-            response['Content-Disposition'] = 'attachment; filename="audio.mp3"'
+            # Get the audio stream URL
+            audio_stream_url = video_info['url']
 
-            # Stream the audio from the audio URL to the response
-            with urllib.request.urlopen(audio_url) as audio_stream:
-                for chunk in audio_stream:
-                    response.write(chunk)
+        # Create a function to generate audio stream chunks
+        def audio_stream_generator():
+            with requests.get(audio_stream_url, stream=True) as response:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        yield chunk
 
-            return response
+        response = StreamingHttpResponse(audio_stream_generator(), content_type='audio/mpeg')
+        response['Content-Disposition'] = 'attachment; filename="audio.mp3"'
+        return response
+
+        # Test 
+        # ydl_opts = {
+        #     'format': 'bestaudio/best',
+        #     'extractaudio': True,
+        #     'audioformat': 'mp3',
+        # }
+        # ydl = yt_dlp.YoutubeDL(ydl_opts)
+
+        # # Download the audio and stream it to the client
+        # with ydl:
+        #     info_dict = ydl.extract_info(yt_url, download=False)
+        #     audio_url = info_dict.get("url")
+
+        #     # Set response headers for streaming
+        #     response = HttpResponse(content_type="audio/mpeg")
+        #     response['Content-Disposition'] = 'attachment; filename="audio.mp3"'
+
+        #     # Stream the audio from the audio URL to the response
+        #     with urllib.request.urlopen(audio_url) as audio_stream:
+        #         for chunk in audio_stream:
+        #             response.write(chunk)
+
+        #     return response
 
        
         # Test code
