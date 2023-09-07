@@ -1,5 +1,6 @@
 from pathlib import Path
 import yt_dlp
+import json
 import subprocess
 import requests
 
@@ -22,70 +23,61 @@ def index(request):
         if not yt_url:
             return render(request, "mp3downloader/index.html")
 
-        # Download stream audio and send to user
-
+        # Test
         ydl_opts = {
-            'format': 'bestaudio/best',
-            'quiet': True,
-            'extractaudio': True,
-            'audioformat': 'mp3',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
+            # Ba = Best audio format
+            'format': 'ba',
+            'extract-audio': True,
+            'audio-format': 'mp3'
         }
-
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(yt_url, download=False)
-            if 'entries' in info_dict:
-                video_info = info_dict['entries'][0]
-            else:
-                video_info = info_dict
+            info = ydl.extract_info(yt_url, download=False)
+            mp3_audio_url = info['url']
+        return render(request, "mp3downloader/index.html", {
+            # 'response': json.dumps(ydl.sanitize_info(info))
+            'response': mp3_audio_url
+        })
+        
+        # ydl = yt_dlp.YoutubeDL()
 
-            # Get the audio stream URL
-            audio_stream_url = video_info['url']
-
-        # Create a function to generate audio stream chunks
-        def audio_stream_generator():
-            with requests.get(audio_stream_url, stream=True) as response:
-                for chunk in response.iter_content(chunk_size=4096):  # Adjust chunk_size
-                    if chunk:
-                        yield chunk
-
-        response = StreamingHttpResponse(audio_stream_generator(), content_type='audio/mpeg')
-        response['Content-Disposition'] = 'attachment; filename="audio.mp3"'
-        return response
-
-        # Test 
-        # ydl_opts = {
+        # # Set options for downloading and capturing output
+        # options = {
         #     'format': 'bestaudio/best',
         #     'extractaudio': True,
         #     'audioformat': 'mp3',
+        #     'outtmpl': "C:/Users/Rick/Documents/MyProject/YTMp3Downloader/YTMp3Downloader/file.mp3", # Output to stdout
+        #     'quiet': False,  # Include status messages in output
         # }
-        # ydl = yt_dlp.YoutubeDL(ydl_opts)
 
-        # # Download the audio and stream it to the client
         # with ydl:
-        #     info_dict = ydl.extract_info(yt_url, download=False)
-        #     audio_url = info_dict.get("url")
+        #     result = ydl.extract_info(yt_url, download=False, force_generic_extractor=True)
+            
+        #     audio_format = next((format for format in result['formats'] if format['ext'] in ['mp3', 'm4a', 'aac']), None)
 
-        #     # Set response headers for streaming
-        #     response = HttpResponse(content_type="audio/mpeg")
-        #     response['Content-Disposition'] = 'attachment; filename="audio.mp3"'
+        #     if audio_format:
+        #         # Capture the output by running the download with the selected format's URL
+        #         output = ydl.download([audio_format['url']])
+        #     else:
+        #         output = "No suitable audio format found for the video."
 
-        #     # Stream the audio from the audio URL to the response
-        #     with urllib.request.urlopen(audio_url) as audio_stream:
-        #         for chunk in audio_stream:
-        #             response.write(chunk)
 
-        #     return response
+        # # The 'output' variable now contains the captured output
+        # print(output)
 
-       
+        # return render(request, "mp3downloader/index.html", {
+        #     'response': output
+        # })
+
         # Test code
         # process = subprocess.Popen(['yt-dlp', '--output', '-', '--extract-audio', '--audio-format', 'mp3', yt_url], stdout=subprocess.PIPE)
+        
         # print("HI")
-        # print(process.stdout)
+        # while True:
+        #     line = process.stdout.readline()
+        #     if not line:
+        #         break
+        #     print(line, end='')
+
 
         # # Set response headers for streaming
         # response = FileResponse(process.stdout, content_type='audio/mpeg')
