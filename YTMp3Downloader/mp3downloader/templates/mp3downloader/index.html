@@ -23,11 +23,27 @@
             </form>
         </div>
     </div>
-
-    {{response}}
+    <p id="response">
+        {{response}}
+    </p>
+    <button id="btn"> hi </button>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const response = document.querySelector('#response').innerHTML;
+            const btn = document.querySelector('#btn');
+            btn.addEventListener('click', () => downloadFileFromURL(response))
+        });
         
+        function downloadFileFromURL(url) {
+            const downloadLink = document.createElement("a");
+            downloadLink.href = url;
+            downloadLink.download = "downloaded_audio.mp3"; // Specify the filename
+
+            // Trigger a click event to initiate the download
+            downloadLink.click();
+        }
+    
     </script>
 
 </body>

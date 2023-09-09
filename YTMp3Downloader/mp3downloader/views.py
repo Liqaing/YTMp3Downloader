@@ -23,7 +23,7 @@ def index(request):
         if not yt_url:
             return render(request, "mp3downloader/index.html")
 
-        # Test
+        # Test, retrun stream audio url
         ydl_opts = {
             # Ba = Best audio format
             'format': 'ba',
@@ -37,53 +37,6 @@ def index(request):
             # 'response': json.dumps(ydl.sanitize_info(info))
             'response': mp3_audio_url
         })
-        
-        # ydl = yt_dlp.YoutubeDL()
-
-        # # Set options for downloading and capturing output
-        # options = {
-        #     'format': 'bestaudio/best',
-        #     'extractaudio': True,
-        #     'audioformat': 'mp3',
-        #     'outtmpl': "C:/Users/Rick/Documents/MyProject/YTMp3Downloader/YTMp3Downloader/file.mp3", # Output to stdout
-        #     'quiet': False,  # Include status messages in output
-        # }
-
-        # with ydl:
-        #     result = ydl.extract_info(yt_url, download=False, force_generic_extractor=True)
-            
-        #     audio_format = next((format for format in result['formats'] if format['ext'] in ['mp3', 'm4a', 'aac']), None)
-
-        #     if audio_format:
-        #         # Capture the output by running the download with the selected format's URL
-        #         output = ydl.download([audio_format['url']])
-        #     else:
-        #         output = "No suitable audio format found for the video."
-
-
-        # # The 'output' variable now contains the captured output
-        # print(output)
-
-        # return render(request, "mp3downloader/index.html", {
-        #     'response': output
-        # })
-
-        # Test code
-        # process = subprocess.Popen(['yt-dlp', '--output', '-', '--extract-audio', '--audio-format', 'mp3', yt_url], stdout=subprocess.PIPE)
-        
-        # print("HI")
-        # while True:
-        #     line = process.stdout.readline()
-        #     if not line:
-        #         break
-        #     print(line, end='')
-
-
-        # # Set response headers for streaming
-        # response = FileResponse(process.stdout, content_type='audio/mpeg')
-        # response['Content-Disposition'] = 'attachment; filename="music.mp3"'
-
-        # return response
 
         # My code
         # # Retrive video id
